@@ -71,14 +71,11 @@ def create_app(config_class=Config):
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-   with app.app_context():
-    try:
-        from app.services.schema import sync_schema
-        from app.services.seed import seed_initial_data
+ with app.app_context():
+    from app.services.schema import sync_schema
+    from app.services.seed import seed_initial_data
 
-        sync_schema()
-        seed_initial_data()
-    except Exception as e:
-        print("DB INIT ERROR:", e)
+    sync_schema()
+    seed_initial_data()
 
     return app
