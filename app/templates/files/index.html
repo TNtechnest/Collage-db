@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Files | {{ college_name }}{% endblock %}
+{% block page_title %}Secure File Center{% endblock %}
+{% block page_subtitle %}Upload student documents and event media with tenant-safe storage paths.{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 col-xl-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Upload File</h2></div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" class="row g-3">
+                    {{ form.hidden_tag() }}
+                    <div class="col-12">{{ form.category.label(class="form-label") }}{{ form.category(class="form-select") }}</div>
+                    <div class="col-12">{{ form.student_id.label(class="form-label") }}{{ form.student_id(class="form-select") }}</div>
+                    <div class="col-12">{{ form.description.label(class="form-label") }}{{ form.description(class="form-control", placeholder="Short description") }}</div>
+                    <div class="col-12">{{ form.file.label(class="form-label") }}{{ form.file(class="form-control") }}</div>
+                    <div class="col-12 d-grid">{{ form.submit(class="btn btn-primary") }}</div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Stored Files</h2></div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table align-middle custom-table">
+                        <thead><tr><th>File</th><th>Category</th><th>Student</th><th>Description</th><th>Uploaded</th><th class="text-end">Action</th></tr></thead>
+                        <tbody>
+                            {% for item in files %}
+                            <tr>
+                                <td>{{ item.original_filename }}</td>
+                                <td>{{ item.category|replace('_', ' ')|title }}</td>
+                                <td>{{ item.student.name if item.student else 'General' }}</td>
+                                <td>{{ item.description or 'NA' }}</td>
+                                <td>{{ item.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                                <td class="text-end"><a href="{{ url_for('files.download_file', file_id=item.id) }}" class="btn btn-sm btn-outline-primary">Download</a></td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="6" class="text-center py-4 text-secondary">No files uploaded yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Results | {{ college_name }}{% endblock %}
+{% block page_title %}Results Management{% endblock %}
+{% block page_subtitle %}Capture internal marks, upload university results, and review performance summaries.{% endblock %}
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12 {% if can_upload_university %}col-xl-6{% else %}col-xl-8{% endif %}">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h2 class="section-title">Internal Results Entry</h2>
+                <p class="section-subtitle mb-0">Subject-wise marks with automatic summary updates</p>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {{ mark_form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-12">{{ mark_form.student_id.label(class="form-label") }}{{ mark_form.student_id(class="form-select") }}</div>
+                        <div class="col-12 col-md-6">{{ mark_form.subject_id.label(class="form-label") }}{{ mark_form.subject_id(class="form-select") }}</div>
+                        <div class="col-12 col-md-6">{{ mark_form.exam_type.label(class="form-label") }}{{ mark_form.exam_type(class="form-select") }}</div>
+                        <div class="col-12">{{ mark_form.marks_obtained.label(class="form-label") }}{{ mark_form.marks_obtained(class="form-control", placeholder="Enter marks") }}</div>
+                    </div>
+                    <div class="mt-4">{{ mark_form.submit(class="btn btn-primary") }}</div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if can_upload_university %}
+    <div class="col-12 col-xl-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h2 class="section-title">University Results Upload</h2>
+                <p class="section-subtitle mb-0">Upload `.xlsx` with columns: Register No, Total Marks, Percentage, Result Status</p>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {{ upload_form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">{{ upload_form.exam_name.label(class="form-label") }}{{ upload_form.exam_name(class="form-control", placeholder="University Exam") }}</div>
+                        <div class="col-12 col-md-6">{{ upload_form.semester.label(class="form-label") }}{{ upload_form.semester(class="form-control", placeholder="Semester 6") }}</div>
+                        <div class="col-12">{{ upload_form.excel_file.label(class="form-label") }}{{ upload_form.excel_file(class="form-control") }}</div>
+                    </div>
+                    <div class="mt-4">{{ upload_form.submit(class="btn btn-dark") }}</div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 col-xl-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h2 class="section-title">Assigned Subjects</h2>
+                <p class="section-subtitle mb-0">You can only manage marks for the subjects below.</p>
+            </div>
+            <div class="card-body">
+                <div class="activity-list">
+                    {% for subject in accessible_subjects %}
+                    <div class="activity-item">
+                        <div class="activity-dot"></div>
+                        <div>
+                            <div class="fw-semibold">{{ subject.name }}</div>
+                            <div class="text-secondary small">{{ subject.code }} • {{ subject.department.name if subject.department else 'No Department' }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-secondary">No subjects have been assigned to your account yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <div class="col-12 {% if can_upload_university %}col-xl-4{% else %}col-xl-12{% endif %}">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h2 class="section-title">Recent Marks</h2>
+            </div>
+            <div class="card-body">
+                {% for mark in marks %}
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div>
+                        <div class="fw-semibold">{{ mark.student.name }} - {{ mark.subject.name }}</div>
+                        <div class="text-secondary small">{{ mark.exam_type }} • {{ mark.marks_obtained }}/{{ mark.subject.max_marks }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-secondary">No marks entries available.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% if can_upload_university %}
+    <div class="col-12 col-xl-8">
+        <div class="card border-0 shadow-sm h-100 mb-4">
+            <div class="card-header bg-white border-0">
+                <h2 class="section-title">Internal Summaries</h2>
+            </div>
+            <div class="card-body table-card-body">
+                <div class="table-responsive">
+                    <table class="table custom-table align-middle">
+                        <thead>
+                            <tr><th>Student</th><th>Exam</th><th>Total</th><th>Percentage</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for result in internal_results %}
+                            <tr>
+                                <td>{{ result.student.name }}</td>
+                                <td>{{ result.exam_name }}</td>
+                                <td>{{ result.total_marks }}</td>
+                                <td>{{ result.percentage }}%</td>
+                                <td>{{ result.result_status }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center py-4 text-secondary">No internal summaries available.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0">
+                <h2 class="section-title">University Summaries</h2>
+            </div>
+            <div class="card-body table-card-body">
+                <div class="table-responsive">
+                    <table class="table custom-table align-middle">
+                        <thead>
+                            <tr><th>Student</th><th>Exam</th><th>Semester</th><th>Percentage</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for result in university_results %}
+                            <tr>
+                                <td>{{ result.student.name }}</td>
+                                <td>{{ result.exam_name }}</td>
+                                <td>{{ result.semester }}</td>
+                                <td>{{ result.percentage }}%</td>
+                                <td>{{ result.result_status }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center py-4 text-secondary">No university uploads yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

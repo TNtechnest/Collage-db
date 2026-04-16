@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Timetable | {{ college_name }}{% endblock %}
+{% block page_title %}Timetable Management{% endblock %}
+{% block page_subtitle %}Maintain class schedules and personal staff timetables with reusable time slots.{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 col-xl-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Time Slots</h2></div>
+            <div class="card-body">
+                {% if current_user.role in ["admin", "hod"] %}
+                <form method="post" class="row g-3 mb-4">
+                    {{ slot_form.hidden_tag() }}
+                    <div class="col-12">{{ slot_form.label.label(class="form-label") }}{{ slot_form.label(class="form-control", placeholder="Slot 1") }}</div>
+                    <div class="col-12">{{ slot_form.weekday.label(class="form-label") }}{{ slot_form.weekday(class="form-select") }}</div>
+                    <div class="col-12 col-md-6">{{ slot_form.start_time.label(class="form-label") }}{{ slot_form.start_time(class="form-control") }}</div>
+                    <div class="col-12 col-md-6">{{ slot_form.end_time.label(class="form-label") }}{{ slot_form.end_time(class="form-control") }}</div>
+                    <div class="col-12 d-grid">{{ slot_form.submit(class="btn btn-dark") }}</div>
+                </form>
+                {% endif %}
+                <div class="activity-list">
+                    {% for slot in time_slots %}
+                    <div class="activity-item">
+                        <div>
+                            <div class="fw-semibold">{{ slot.weekday }} · {{ slot.label }}</div>
+                            <div class="small text-secondary">{{ slot.start_time.strftime('%H:%M') }} - {{ slot.end_time.strftime('%H:%M') }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-secondary mb-0">No time slots available yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Class Timetable</h2></div>
+            <div class="card-body">
+                {% if current_user.role in ["admin", "hod"] %}
+                <form method="post" class="row g-3 mb-4">
+                    {{ entry_form.hidden_tag() }}
+                    <div class="col-12 col-md-6">{{ entry_form.department_id.label(class="form-label") }}{{ entry_form.department_id(class="form-select") }}</div>
+                    <div class="col-12 col-md-6">{{ entry_form.year.label(class="form-label") }}{{ entry_form.year(class="form-select") }}</div>
+                    <div class="col-12 col-md-6">{{ entry_form.subject_id.label(class="form-label") }}{{ entry_form.subject_id(class="form-select") }}</div>
+                    <div class="col-12 col-md-6">{{ entry_form.staff_id.label(class="form-label") }}{{ entry_form.staff_id(class="form-select") }}</div>
+                    <div class="col-12 col-md-6">{{ entry_form.time_slot_id.label(class="form-label") }}{{ entry_form.time_slot_id(class="form-select") }}</div>
+                    <div class="col-12 col-md-6">{{ entry_form.room.label(class="form-label") }}{{ entry_form.room(class="form-control", placeholder="Room / Lab") }}</div>
+                    <div class="col-12 d-grid d-md-flex justify-content-md-end">{{ entry_form.submit(class="btn btn-primary") }}</div>
+                </form>
+                {% endif %}
+
+                <div class="table-responsive">
+                    <table class="table align-middle custom-table">
+                        <thead><tr><th>Day</th><th>Slot</th><th>Department</th><th>Year</th><th>Subject</th><th>Staff</th><th>Room</th></tr></thead>
+                        <tbody>
+                            {% for entry in entries %}
+                            <tr>
+                                <td>{{ entry.time_slot.weekday }}</td>
+                                <td>{{ entry.time_slot.label }}<div class="small text-secondary">{{ entry.time_slot.start_time.strftime('%H:%M') }} - {{ entry.time_slot.end_time.strftime('%H:%M') }}</div></td>
+                                <td>{{ entry.department.name }}</td>
+                                <td>Year {{ entry.year }}</td>
+                                <td>{{ entry.subject.name }}</td>
+                                <td>{{ entry.staff_member.display_name }}</td>
+                                <td>{{ entry.room }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="7" class="text-center py-4 text-secondary">No timetable entries configured.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if personal_schedule %}
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-0"><h2 class="section-title">My Schedule</h2></div>
+            <div class="card-body">
+                <div class="activity-list">
+                    {% for entry in personal_schedule %}
+                    <div class="activity-item">
+                        <div>
+                            <div class="fw-semibold">{{ entry.subject.name }} · {{ entry.room }}</div>
+                            <div class="small text-secondary">{{ entry.time_slot.weekday }} | {{ entry.time_slot.start_time.strftime('%H:%M') }} - {{ entry.time_slot.end_time.strftime('%H:%M') }}</div>
+                        </div>
+                        <div class="small text-secondary">{{ entry.department.name }} · Year {{ entry.year }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

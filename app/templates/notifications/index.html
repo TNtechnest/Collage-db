@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Notifications | {{ college_name }}{% endblock %}
+{% block page_title %}Notifications Center{% endblock %}
+{% block page_subtitle %}Queue SMS and WhatsApp-ready alerts for attendance, results, and general updates.{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 col-xl-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Compose Alert</h2></div>
+            <div class="card-body">
+                <div class="summary-grid mb-4">
+                    <div class="summary-tile"><div class="label">SMS</div><div class="value">{{ "Enabled" if sms_enabled else "Disabled" }}</div></div>
+                    <div class="summary-tile"><div class="label">WhatsApp</div><div class="value">{{ "Enabled" if whatsapp_enabled else "Disabled" }}</div></div>
+                </div>
+                <form method="post" class="row g-3">
+                    {{ form.hidden_tag() }}
+                    <div class="col-12">{{ form.student_id.label(class="form-label") }}{{ form.student_id(class="form-select") }}</div>
+                    <div class="col-12 col-md-6">{{ form.channel.label(class="form-label") }}{{ form.channel(class="form-select") }}</div>
+                    <div class="col-12 col-md-6">{{ form.trigger_type.label(class="form-label") }}{{ form.trigger_type(class="form-select") }}</div>
+                    <div class="col-12">{{ form.message.label(class="form-label") }}{{ form.message(class="form-control", rows="5", placeholder="Enter alert message") }}</div>
+                    <div class="col-12 d-grid">{{ form.submit(class="btn btn-primary") }}</div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Notification Log</h2></div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table align-middle custom-table">
+                        <thead><tr><th>When</th><th>Student</th><th>Channel</th><th>Trigger</th><th>Recipient</th><th>Status</th><th>Reference</th></tr></thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>{{ log.created_at.strftime('%d %b %Y, %I:%M %p') }}</td>
+                                <td>{{ log.student.name if log.student else 'Broadcast' }}</td>
+                                <td>{{ log.channel|upper }}</td>
+                                <td>{{ log.trigger_type|title }}</td>
+                                <td>{{ log.recipient }}</td>
+                                <td><span class="badge text-bg-light border">{{ log.status|title }}</span></td>
+                                <td>{{ log.external_reference or 'NA' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="7" class="text-center py-4 text-secondary">No notifications logged yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

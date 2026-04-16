@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Staff | {{ college_name }}{% endblock %}
+{% block page_title %}Staff Management{% endblock %}
+{% block page_subtitle %}Create staff accounts, assign roles, and map them to multiple subjects.{% endblock %}
+{% block content %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form class="row g-3" method="get">
+            <div class="col-12 col-lg-8">
+                <label class="form-label">Search Staff</label>
+                <input type="text" class="form-control" name="search" value="{{ search }}" placeholder="Search by name, email, or role">
+            </div>
+            <div class="col-12 col-lg-4 d-flex align-items-end gap-2">
+                <button class="btn btn-primary w-100" type="submit">Apply</button>
+                <a href="{{ url_for('staff.add_staff') }}" class="btn btn-dark w-100">Add Staff</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body table-card-body">
+        <div class="table-responsive">
+            <table class="table align-middle custom-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Role</th>
+                        <th>Assigned Subjects</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in staff_members.items %}
+                    <tr>
+                        <td>{{ member.display_name }}</td>
+                        <td>{{ member.email }}</td>
+                        <td>{{ member.department.name if member.department else 'Not Set' }}</td>
+                        <td><span class="badge {% if member.role == 'admin' %}text-bg-dark{% else %}text-bg-primary{% endif %}">{{ member.role|title }}</span></td>
+                        <td>
+                            {% if member.assigned_subjects %}
+                                {{ member.assigned_subjects | map(attribute='code') | join(', ') }}
+                            {% else %}
+                                <span class="text-secondary">No subjects</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ url_for('staff.edit_staff', user_id=member.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <form method="post" action="{{ url_for('staff.delete_staff', user_id=member.id) }}" onsubmit="return confirm('Delete this account?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center py-4 text-secondary">No staff accounts found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if staff_members.pages > 1 %}
+        <nav class="mt-3">
+            <ul class="pagination justify-content-end mb-0">
+                {% for page_num in staff_members.iter_pages() %}
+                    {% if page_num %}
+                    <li class="page-item {% if staff_members.page == page_num %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('staff.list_staff', page=page_num, search=search) }}">{{ page_num }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

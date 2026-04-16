@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Record Payment | {{ college_name }}{% endblock %}
+{% block page_title %}Record Fee Payment{% endblock %}
+{% block page_subtitle %}Apply a payment against the selected student fee record.{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="summary-grid mb-4">
+                    <div class="summary-tile"><div class="label">Student</div><div class="value">{{ student_fee.student.name }}</div></div>
+                    <div class="summary-tile"><div class="label">Category</div><div class="value">{{ student_fee.category.name }}</div></div>
+                    <div class="summary-tile"><div class="label">Due</div><div class="value">{{ student_fee.due_amount }}</div></div>
+                </div>
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">{{ form.amount.label(class="form-label") }}{{ form.amount(class="form-control", placeholder="0.00") }}</div>
+                        <div class="col-12 col-md-6">{{ form.payment_method.label(class="form-label") }}{{ form.payment_method(class="form-select") }}</div>
+                        <div class="col-12 col-md-6">{{ form.reference.label(class="form-label") }}{{ form.reference(class="form-control", placeholder="Transaction reference") }}</div>
+                        <div class="col-12 col-md-6">{{ form.payment_date.label(class="form-label") }}{{ form.payment_date(class="form-control") }}</div>
+                    </div>
+                    <div class="d-flex gap-2 mt-4">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('fees.manage_fees') }}" class="btn btn-outline-secondary">Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

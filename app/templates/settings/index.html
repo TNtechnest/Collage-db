@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Settings | {{ college_name }}{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block page_subtitle %}Configure institutional branding and department masters for the platform.{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">College Profile</h2></div>
+            <div class="card-body">
+                <form method="post">
+                    {{ settings_form.hidden_tag() }}
+                    <div class="mb-3">{{ settings_form.college_name.label(class="form-label") }}{{ settings_form.college_name(class="form-control", placeholder="Enter college name") }}</div>
+                    <div class="mb-3">{{ settings_form.college_code.label(class="form-label") }}{{ settings_form.college_code(class="form-control", placeholder="Tenant code") }}</div>
+                    <div class="mb-3">{{ settings_form.contact_email.label(class="form-label") }}{{ settings_form.contact_email(class="form-control", placeholder="Contact email") }}</div>
+                    <div class="mb-3">{{ settings_form.contact_phone.label(class="form-label") }}{{ settings_form.contact_phone(class="form-control", placeholder="Contact phone") }}</div>
+                    {{ settings_form.submit(class="btn btn-primary") }}
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Departments</h2></div>
+            <div class="card-body">
+                <form method="post" class="row g-3 align-items-end mb-4">
+                    {{ department_form.hidden_tag() }}
+                    <div class="col-12 col-md-5">{{ department_form.name.label(class="form-label") }}{{ department_form.name(class="form-control", placeholder="Department name") }}</div>
+                    <div class="col-12 col-md-4">{{ department_form.code.label(class="form-label") }}{{ department_form.code(class="form-control", placeholder="Code") }}</div>
+                    <div class="col-12 col-md-3 d-grid">{{ department_form.submit(class="btn btn-dark") }}</div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table custom-table align-middle mb-0">
+                        <thead><tr><th>Name</th><th>Code</th></tr></thead>
+                        <tbody>
+                            {% for department in departments %}
+                            <tr><td>{{ department.name }}</td><td>{{ department.code }}</td></tr>
+                            {% else %}
+                            <tr><td colspan="2" class="text-center py-4 text-secondary">No departments configured.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

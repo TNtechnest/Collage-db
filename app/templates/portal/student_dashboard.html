@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Student Portal | {{ college_name }}{% endblock %}
+{% block page_title %}Student Portal{% endblock %}
+{% block page_subtitle %}View your attendance, results, documents, and academic schedule securely.{% endblock %}
+{% block content %}
+<div class="portal-hero mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+        <div>
+            <h2 class="mb-1">{{ student.name }}</h2>
+            <div class="text-secondary">{{ student.register_no }} · {{ student.department.name if student.department else 'Department N/A' }} · Year {{ student.year }}</div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('portal.profile') }}" class="btn btn-outline-primary">Profile</a>
+            <a href="{{ url_for('portal.student_report') }}" class="btn btn-primary">Download PDF Report</a>
+        </div>
+    </div>
+</div>
+
+<div class="summary-grid mb-4">
+    <div class="summary-tile"><div class="label">Attendance</div><div class="value">{{ student.attendance_percentage }}%</div></div>
+    <div class="summary-tile"><div class="label">Fees Paid</div><div class="value">{{ student.total_fees_paid }}</div></div>
+    <div class="summary-tile"><div class="label">Fees Due</div><div class="value">{{ student.total_fees_due }}</div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Recent Marks</h2></div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table align-middle custom-table mb-0">
+                        <thead><tr><th>Subject</th><th>Exam</th><th>Marks</th></tr></thead>
+                        <tbody>
+                            {% for mark in recent_marks %}
+                            <tr><td>{{ mark.subject.name }}</td><td>{{ mark.exam_type }}</td><td>{{ mark.marks_obtained }}</td></tr>
+                            {% else %}
+                            <tr><td colspan="3" class="text-center py-4 text-secondary">No marks published yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Recent Results</h2></div>
+            <div class="card-body">
+                <div class="activity-list">
+                    {% for result in recent_results %}
+                    <div class="activity-item">
+                        <div>
+                            <div class="fw-semibold">{{ result.exam_name }}</div>
+                            <div class="small text-secondary">{{ result.result_type }} · {{ result.semester or "Current Term" }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-semibold">{{ result.percentage }}%</div>
+                            <div class="small text-secondary">{{ result.result_status }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-secondary mb-0">No result summaries available yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Class Timetable</h2></div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table align-middle custom-table mb-0">
+                        <thead><tr><th>Day</th><th>Slot</th><th>Subject</th><th>Staff</th><th>Room</th></tr></thead>
+                        <tbody>
+                            {% for entry in timetable_entries %}
+                            <tr>
+                                <td>{{ entry.time_slot.weekday }}</td>
+                                <td>{{ entry.time_slot.label }}<div class="small text-secondary">{{ entry.time_slot.start_time.strftime('%H:%M') }} - {{ entry.time_slot.end_time.strftime('%H:%M') }}</div></td>
+                                <td>{{ entry.subject.name }}</td>
+                                <td>{{ entry.staff_member.display_name }}</td>
+                                <td>{{ entry.room }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center py-4 text-secondary">Timetable not assigned yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Documents</h2></div>
+            <div class="card-body">
+                <div class="activity-list">
+                    {% for item in uploaded_files %}
+                    <div class="activity-item">
+                        <div>
+                            <div class="fw-semibold">{{ item.original_filename }}</div>
+                            <div class="small text-secondary">{{ item.description or item.category|replace('_', ' ')|title }}</div>
+                        </div>
+                        <div class="small text-secondary">{{ item.created_at.strftime('%d %b %Y') }}</div>
+                    </div>
+                    {% else %}
+                    <p class="text-secondary mb-0">No documents linked yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

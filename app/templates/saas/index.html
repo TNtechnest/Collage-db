@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Tenant & Billing | {{ college_name }}{% endblock %}
+{% block page_title %}Tenant & Billing{% endblock %}
+{% block page_subtitle %}Manage your tenant profile, subscription history, and payment-gateway-ready billing metadata.{% endblock %}
+{% block content %}
+<div class="summary-grid mb-4">
+    <div class="summary-tile"><div class="label">Tenant</div><div class="value">{{ college.name if college else "NA" }}</div></div>
+    <div class="summary-tile"><div class="label">Users</div><div class="value">{{ tenant_metrics.users }}</div></div>
+    <div class="summary-tile"><div class="label">Students</div><div class="value">{{ tenant_metrics.students }}</div></div>
+    <div class="summary-tile"><div class="label">Current Plan</div><div class="value">{{ current_subscription.plan.name if current_subscription and current_subscription.plan else "NA" }}</div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Update Subscription</h2></div>
+            <div class="card-body">
+                <form method="post" class="row g-3">
+                    {{ form.hidden_tag() }}
+                    <div class="col-12">{{ form.plan_id.label(class="form-label") }}{{ form.plan_id(class="form-select") }}</div>
+                    <div class="col-12">{{ form.status.label(class="form-label") }}{{ form.status(class="form-select") }}</div>
+                    <div class="col-12 d-grid">{{ form.submit(class="btn btn-primary") }}</div>
+                </form>
+                <hr class="my-4">
+                <h3 class="section-title mb-3">Available Plans</h3>
+                <div class="activity-list">
+                    {% for plan in plans %}
+                    <div class="activity-item">
+                        <div>
+                            <div class="fw-semibold">{{ plan.name }}</div>
+                            <div class="small text-secondary">{{ plan.features|join(', ') }}</div>
+                        </div>
+                        <div class="fw-semibold">{{ plan.monthly_price }}/mo</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Subscription History</h2></div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table align-middle custom-table mb-0">
+                        <thead><tr><th>Plan</th><th>Status</th><th>Started</th><th>Reference</th></tr></thead>
+                        <tbody>
+                            {% for item in history %}
+                            <tr>
+                                <td>{{ item.plan.name }}</td>
+                                <td>{{ item.status|title }}</td>
+                                <td>{{ item.start_date.strftime('%d %b %Y') if item.start_date else 'NA' }}</td>
+                                <td>{{ item.payment_reference or 'NA' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="4" class="text-center py-4 text-secondary">No subscription history available.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Razorpay Payload</h2></div>
+            <div class="card-body">
+                <p class="text-secondary">This payload is ready to plug into a future Razorpay checkout flow or backend billing worker.</p>
+                <pre class="code-block mb-3">{{ razorpay_payload | tojson(indent=2) }}</pre>
+                <h3 class="section-title mb-3">Current Subscription Snapshot</h3>
+                <pre class="code-block mb-0">{{ subscription_json | tojson(indent=2) }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

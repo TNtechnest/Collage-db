@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Profile | {{ college_name }}{% endblock %}
+{% block page_title %}Profile{% endblock %}
+{% block page_subtitle %}Review your linked identity, contact information, and tenant access scope.{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="section-title mb-3">Account</h2>
+                <div class="info-block">
+                    <div class="mb-2"><strong>Name:</strong> {{ current_user.display_name }}</div>
+                    <div class="mb-2"><strong>Email:</strong> {{ current_user.email }}</div>
+                    <div class="mb-0"><strong>Role:</strong> {{ role_labels.get(current_user.role, current_user.role|title) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                {% if student %}
+                <h2 class="section-title mb-3">Student Details</h2>
+                <div class="info-block">
+                    <div class="mb-2"><strong>Register No:</strong> {{ student.register_no }}</div>
+                    <div class="mb-2"><strong>Department:</strong> {{ student.department.name if student.department else 'NA' }}</div>
+                    <div class="mb-2"><strong>Year:</strong> {{ student.year }}</div>
+                    <div class="mb-0"><strong>Phone:</strong> {{ student.phone or 'Not set' }}</div>
+                </div>
+                {% elif parent_profile %}
+                <h2 class="section-title mb-3">Parent Details</h2>
+                <div class="info-block">
+                    <div class="mb-2"><strong>Guardian:</strong> {{ parent_profile.full_name }}</div>
+                    <div class="mb-2"><strong>Phone:</strong> {{ parent_profile.phone }}</div>
+                    <div class="mb-2"><strong>Relationship:</strong> {{ parent_profile.relationship }}</div>
+                    <div class="mb-0"><strong>Linked Students:</strong> {{ parent_profile.students|map(attribute='name')|join(', ') }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Fees | {{ college_name }}{% endblock %}
+{% block page_title %}Fees Management{% endblock %}
+{% block page_subtitle %}Track fee categories, student dues, and payment collections in one place.{% endblock %}
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12 col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="metric-label">Collected</div><div class="metric-value">{{ total_collected }}</div><div class="metric-footnote">Total amount received</div></div></div></div>
+    <div class="col-12 col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="metric-label">Pending Dues</div><div class="metric-value">{{ pending_dues }}</div><div class="metric-footnote">Outstanding amount across fee records</div></div></div></div>
+    <div class="col-12 col-md-4"><div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="metric-label">Pending Records</div><div class="metric-value">{{ pending_count }}</div><div class="metric-footnote">Fee records awaiting payment closure</div></div></div></div>
+</div>
+
+<div class="row g-4">
+    {% if current_user.role == "admin" %}
+    <div class="col-12 col-xl-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Fee Categories</h2></div>
+            <div class="card-body">
+                <form method="post" class="row g-3">
+                    {{ category_form.hidden_tag() }}
+                    <div class="col-12">{{ category_form.name.label(class="form-label") }}{{ category_form.name(class="form-control", placeholder="Tuition / Exam / Hostel") }}</div>
+                    <div class="col-12">{{ category_form.description.label(class="form-label") }}{{ category_form.description(class="form-control", placeholder="Optional description") }}</div>
+                    <div class="col-12">{{ category_form.default_amount.label(class="form-label") }}{{ category_form.default_amount(class="form-control", placeholder="0.00") }}</div>
+                    <div class="col-12 d-grid">{{ category_form.submit(class="btn btn-dark") }}</div>
+                </form>
+                <hr class="my-4">
+                <div class="activity-list">
+                    {% for category in categories %}
+                    <div class="activity-item">
+                        <div>
+                            <div class="fw-semibold">{{ category.name }}</div>
+                            <div class="small text-secondary">{{ category.description or "No description" }}</div>
+                        </div>
+                        <div class="fw-semibold">{{ category.default_amount }}</div>
+                    </div>
+                    {% else %}
+                    <p class="text-secondary mb-0">No fee categories available yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="col-12 {% if current_user.role == 'admin' %}col-xl-8{% else %}col-xl-12{% endif %}">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0"><h2 class="section-title">Assign Student Fee</h2></div>
+            <div class="card-body">
+                {% if current_user.role in ["admin", "hod"] %}
+                <form method="post" class="row g-3 mb-4">
+                    {{ fee_form.hidden_tag() }}
+                    <div class="col-12 col-md-6">{{ fee_form.student_id.label(class="form-label") }}{{ fee_form.student_id(class="form-select") }}</div>
+                    <div class="col-12 col-md-6">{{ fee_form.fee_category_id.label(class="form-label") }}{{ fee_form.fee_category_id(class="form-select") }}</div>
+                    <div class="col-12 col-md-6">{{ fee_form.total_amount.label(class="form-label") }}{{ fee_form.total_amount(class="form-control", placeholder="0.00") }}</div>
+                    <div class="col-12 col-md-6">{{ fee_form.due_date.label(class="form-label") }}{{ fee_form.due_date(class="form-control") }}</div>
+                    <div class="col-12 d-grid d-md-flex justify-content-md-end">{{ fee_form.submit(class="btn btn-primary") }}</div>
+                </form>
+                {% endif %}
+
+                <div class="table-responsive">
+                    <table class="table align-middle custom-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Category</th>
+                                <th>Total</th>
+                                <th>Paid</th>
+                                <th>Due</th>
+                                <th>Status</th>
+                                <th>Due Date</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fee in fees %}
+                            <tr>
+                                <td>{{ fee.student.name }}</td>
+                                <td>{{ fee.category.name }}</td>
+                                <td>{{ fee.total_amount }}</td>
+                                <td>{{ fee.amount_paid }}</td>
+                                <td>{{ fee.due_amount }}</td>
+                                <td><span class="badge {% if fee.status == 'paid' %}text-bg-success{% else %}text-bg-warning{% endif %}">{{ fee.status|title }}</span></td>
+                                <td>{{ fee.due_date.strftime('%d %b %Y') if fee.due_date else 'Open' }}</td>
+                                <td class="text-end">{% if current_user.role in ["admin", "hod"] %}<a href="{{ url_for('fees.record_payment', fee_id=fee.id) }}" class="btn btn-sm btn-outline-primary">Receive Payment</a>{% else %}<span class="text-secondary small">Read only</span>{% endif %}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="8" class="text-center py-4 text-secondary">No fee records available.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr class="my-4">
+                <h3 class="section-title mb-3">Recent Payments</h3>
+                <div class="table-responsive">
+                    <table class="table align-middle custom-table mb-0">
+                        <thead><tr><th>Date</th><th>Student</th><th>Method</th><th>Reference</th><th>Amount</th></tr></thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>{{ payment.payment_date.strftime('%d %b %Y') }}</td>
+                                <td>{{ payment.student_fee.student.name }}</td>
+                                <td>{{ payment.payment_method|title }}</td>
+                                <td>{{ payment.reference or 'NA' }}</td>
+                                <td>{{ payment.amount }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" class="text-center py-4 text-secondary">No payments recorded yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
